@@ -1,0 +1,46 @@
+\documentclass[times, utf8, seminar, english]{fer}
+\usepackage{booktabs}
+\usepackage{epigraph}
+\usepackage{mathtools, amsmath,amsfonts,amssymb, amsthm}
+\usepackage{hyperref}
+
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd{\chapter}{\if@openright\cleardoublepage\else\clearpage\fi}{}{}{}
+\makeatother
+
+\begin{document}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+
+\title{iproute2 and iptables packet}
+\author{Neven Miculinić}
+
+\maketitle
+\tableofcontents
+
+\chapter{Introduction}
+
+Networking is one of the most important topic in everyday computer use. Every day you send and recieve thousand IP packages. 
+Every facebook like, youtube video view or application download utilized world wide web, that is the Internet.
+Overwhelming majority of the Internet infrastucture Linux, 98.3\%...check data
+
+Therefore, it's more than likely you'd come into contact with linux networking stack and tooling.
+Since this topic is masively broad and complex, this paper is focusing on following two components:
+\begin{itemize}
+    \item Netfilter/iptables --- framework for various network related operations for packet filtering, NAT and port translation
+    \item iproute2 --- usespace utilies for controling and monitoring various networking options in Linux kernel
+\end{itemize}
+
+\chapter{Brief overview of Linux kernel network stack}
+pass
+\chapter{Example usecases}
+pass
+\section{OpenVPN on Google cloud platform}
+pass
+\section{Isolating process in its own network namespace}
+
+\bibliography{refs}
+\bibliographystyle{fer}
+
+\end{document}
