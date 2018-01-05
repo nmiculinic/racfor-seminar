@@ -3,6 +3,7 @@
 \usepackage{epigraph}
 \usepackage{mathtools, amsmath,amsfonts,amssymb, amsthm}
 \usepackage{hyperref}
+\usepackage{fancybox}
 
 \usepackage{etoolbox}
 \makeatletter
@@ -34,6 +35,31 @@ Since this topic is masively broad and complex, this paper is focusing on follow
 
 \chapter{Brief overview of Linux kernel network stack}
 pass
+
+Links:
+https://www.privateinternetaccess.com/blog/2016/01/linux-networking-stack-from-the-ground-up-part-1/
+
+\section{iptables}
+\ovalbox{
+    \begin{minipage}{.8\textwidth}
+        \textit{Netfilter is a framework provided by Linux that allows various networking-related operations to be implemented in the form of customized handlers. Netfilter offers various functions and operations for packet filtering, network address translation, and port translation, which provide the functionality required for directing packets through a network, as well as for providing ability to prohibit packets from reaching sensitive locations within a computer network.
+        }
+        \par\emph{Wikipedia}
+    \end{minipage}
+}
+\\
+
+nftables is newer framework, intended to replace Netfilter; however this section focuses on older Netfilter and its usages due to wide support.
+This section focuses on the iptables, one of the utilites provided by Netfilter framework for managing IP packages in the Linux kernel.
+
+It's userspace utility for configuring Linux kernel firewall within Netfilter project.:wq
+
+
+
+\section{Routing tables}
+\section{Network namespaces}
+
+
 \chapter{Example usecases}
 pass
 \section{OpenVPN on Google cloud platform}
