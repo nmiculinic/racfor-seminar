@@ -44,7 +44,7 @@ Visual overview can be seen in figure~\ref{fig:iptables_traverse}.
 \section{Rule}
     Iptables have various rule, when matches their target is executed. They function as if-then construct. The most common rule 'ifs' are source/destination address, protocol and/or interface. They can be combined with and/or clauses. Furthermore any valid BPF~\cite{BPFthefo6:online} bytecode can be rule 'if'
 
-    The most common rule targets are ACCEPT, DROP, REJECT ones which perform packet filtering. In NAT table, common ones are DNAT, SNAT and MASQUERADE which perform IP:port NATing. They shall be described in more detail in later sections. Other common rule targets are LOG and jump to another chain.
+    The most common rule targets are ACCEPT, DROP, REJECT ones which perform packet filtering. In NAT table, common ones are DNAT, SNAT and MASQUERADE which perform IP:port NATing. NAT related targets are explained in section~\ref{sec:NAT}. Other common rule targets are LOG and jump to another chain.
 
 \section{Chain}
     Chain is a list of rules which are matched in order. Rule can be terminal (most of them) or nonterminal (e.g. LOG,  ULOG). Upon reaching the terminal rule (e.g. DROP) chain has reached its end. Chain can have it's default policy (e.g. DROP for table filter in INPUT chain).
@@ -76,24 +76,61 @@ Visual overview can be seen in figure~\ref{fig:iptables_traverse}.
         \item mangle -- Mostly used for quality-of-service (QoS) header bit setting
         \item filter -- packet filtering (DROP, ACCEPT and REJECT tagets)
         \item nat -- NATing packages (DNAT, SNAT, MASQUERADE)
-        \item security --
+        \item security -- packet marking (SECMARK, CONNSECMARK) for SELinux.
     \end{itemize}
-    Refer to link~\cite{Iptables27:online} for more detail.
+    Refer to link~\cite{Iptables27:online} for more detail. In the following few subsections
 
-    \section{Extensions}
+\section{Extensions}
     Iptables offers multiple modules you can use.
-    You can view all installed modules by \texttt{ls -l /lib/iptables} and iptables will load all required modules dynamically.
+    You can view all installed modules by \texttt{ls -l /lib/iptables} and iptables will load all required modules dynamically. One of the most common ones is connection tracking.
+
+    \subsection{Conection tracking}
+    If connection tracking is enabled (and can be disabled in raw TABLE with \texttt{-j NOTRACK} for rule match) each packet can be in following states:
+    \begin{itemize}
+        \item NEW -- first packet of the connection
+        \item ESTABLISHED -- both server and client have sent a package
+        \item RELATED -- related connection to an enstablished one. Protocol specific (e.g. there's FTP, IRC, etc. support in the kernel for RELATED connection tracking)
+        \item INVALID -- connection state cannot be determined
+    \end{itemize}
 
 
 \section{Routing tables}
-\section{Network namespaces}
-
 
 \chapter{Example usecases}
-pass
-\section{OpenVPN on Google cloud platform}
-pass
-\section{Isolating process in its own network namespace}
+
+\section{NAT}
+\label{sec:NAT}
+
+For NAT there are three specific targets related to NATing:
+\begin{itemize}
+    \item SNAT -- Source Network Address Translation. Exit packets source IP and port are rewriten to supplied source IP address. It is only valid in nat table within POSTROUTING chain. Downside is our source IP address must be known and static (or static range). Examples:
+    \begin{minted}{bash}
+# Change source addresses to 1.2.3.4.
+iptables -t nat -A POSTROUTING -o eth0 -j SNAT --to 1.2.3.4
+
+# Change source addresses to 1.2.3.4, 1.2.3.5 or 1.2.3.6
+iptables -t nat -A POSTROUTING -o eth0 -j SNAT \
+    --to 1.2.3.4-1.2.3.6
+
+# Change source addresses to 1.2.3.4, ports 1-1023
+iptables -t nat -A POSTROUTING -p tcp -o eth0 -j SNAT \
+    --to 1.2.3.4:1-1023
+    \end{minted}
+    \item DNAT -- Destination Network Address Translation. It changes the package reciepeing, useful for servers behind firewall. It is only valid within nat table and PREROURING and OUTPUT chain. Examples:
+    \begin{minted}{bash}
+iptables -t nat -A PREROUTING -p tcp -d 15.45.23.67 --dport 80 \
+    -j DNAT --to-destination 192.168.1.1-192.168.1.10
+    \end{minted}
+    \item REDIRECT -- DNAT but make destination local host. Only the port is changed.
+    \begin{minted}{bash}
+iptables -t nat -A PREROURING -p tcp -o eth0 -j REDIRECT \
+    --to-ports 1234
+    \end{minted}
+    \item MASQUERADE -- it's similar to SNAT, but it doesn't require source IP address. It automatically grabs IP address information from sending interface. This is used in dymanically assigned IP connections. Example:
+    \begin{minted}{bash}
+iptables -t nat -A POSTROUTING -p TCP -j MASQUERADE
+    \end{minted}
+\end{itemize}
 
 \section{Disabling internet access for specific device at specific time}
 
