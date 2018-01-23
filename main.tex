@@ -4,7 +4,7 @@
 \usepackage{mathtools, amsmath,amsfonts,amssymb, amsthm}
 \usepackage{hyperref}
 \usepackage{fancybox}
-
+\usepackage{graphicx}
 \usepackage{etoolbox}
 \makeatletter
 \patchcmd{\chapter}{\if@openright\cleardoublepage\else\clearpage\fi}{}{}{}
@@ -22,9 +22,8 @@
 
 \chapter{Introduction}
 
-Networking is one of the most important topic in everyday computer use. Every day you send and recieve thousand IP packages. 
+Networking is one of the most important topic in everyday computer use. Every day you send and recieve thousands IP packages.
 Every facebook like, youtube video view or application download utilized world wide web, that is the Internet.
-Overwhelming majority of the Internet infrastucture Linux, 98.3\%...check data
 
 Therefore, it's more than likely you'd come into contact with linux networking stack and tooling.
 Since this topic is masively broad and complex, this paper is focusing on following two components:
@@ -33,11 +32,14 @@ Since this topic is masively broad and complex, this paper is focusing on follow
     \item iproute2 --- usespace utilies for controling and monitoring various networking options in Linux kernel
 \end{itemize}
 
-\chapter{Brief overview of Linux kernel network stack}
-pass
+The essay is structued with brief introduction in packets flow through various Linux kernel utilities. Figure~\ref
 
-Links:
-https://www.privateinternetaccess.com/blog/2016/01/linux-networking-stack-from-the-ground-up-part-1/
+
+\begin{figure}
+  \caption{A picture of a gull.}
+  \centering
+    \includegraphics[]{table_traverse}
+\end{figure}
 
 \section{iptables}
 \ovalbox{
