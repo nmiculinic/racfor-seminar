@@ -52,11 +52,34 @@ The essay is structued with brief introduction in packets flow through various L
 \\
 
 nftables is newer framework, intended to replace Netfilter; however this section focuses on older Netfilter and its usages due to wide support.
-This section focuses on the iptables, one of the utilites provided by Netfilter framework for managing IP packages in the Linux kernel.
+This section focuses on the iptables~\cite{iptables77:online}, one of the utilites provided by Netfilter framework for managing IP packages in the Linux kernel.
 
-It's userspace utility for configuring Linux kernel firewall within Netfilter project.:wq
+It's userspace utility for configuring Linux kernel firewall within Netfilter project.
+Let's first cover the basic concepts.
+Visual overview can be seen in figure~\ref{fig:iptables_traverse}.
 
+Iptables has multiple tables each with specific purpose.
+Most commonly used ones are mangle, nat, and filter tables, while others are raw, and security. 
+Each tables is composed of multiple chain. 
+Each chain is composed of rule which are evaluated in order. 
+Rule can be terminating (e.g. ACCEPT, DROP) or non-terminating (e.g. LOG)
 
+Each packet passed through multiple tables and chains according to~\ref{fig:iptables_traverse}.
+Default chains are PREROURING, INPUT, FORWARD, OUTPUT and POSTROUTING.
+Their names are describing which packages traverse through with chains. 
+For example, package arriving at the host but not intended for it shall pass PREROURING, FORWARD and POSTROUTING chain.
+Packet originating from the network interface intended for local process shall pass PREROURING and INPUT chains.
+Likewhise packet originating from local process sent into the network shall pass OUTPUT and POSTROUTING chain. 
+
+Iptables offers multiple modules you can use. 
+You can view all installed modules by \texttt{ls -l /lib/iptables} and iptables will load all required modules dynamically.
+
+\begin{figure}
+    \label{fig:iptables_traverse}
+    \centering
+    \includegraphics[width=\textwidth]{tables_traverse}
+    \caption{\cite{Iptables99:online}}
+\end{figure}
 
 \section{Routing tables}
 \section{Network namespaces}
@@ -67,6 +90,21 @@ pass
 \section{OpenVPN on Google cloud platform}
 pass
 \section{Isolating process in its own network namespace}
+
+\section{Disabling internet access for specific device at specific time}
+
+For example you might have a really smart teen adicted to the internet.
+And you'd like disabling his internet access at the router level at certain times, while keeping rest functioning. 
+It can be simly done with one iptables command and few extra modules
+
+\texttt{
+    iptables -A PREROURING -m mac --mac-source 00:0F:EA:91:04:08 -m time --timestart 9:00 --timestop 18:00 -j ACCEPT\\
+    iptables -A PREROURING -m mac --mac-source 00:0F:EA:91:04:08 -j DROP
+}
+
+This is more efficient than IP filtering since you're probably running DHCP on your network dynamically assigning IP addresses. 
+Nevertheless, it's easy for attacker (your teen) to figure out his MAC address is filterer, and to spoof it. 
+Yet, hopefully by the time he figures it out, he'll alread be a functional adult.
 
 \bibliography{refs}
 \bibliographystyle{fer}
