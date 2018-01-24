@@ -16,7 +16,7 @@
 \theoremstyle{definition}
 \newtheorem{definition}{Definition}[section]
 \title{iproute2 and iptables packet}
-\author{Neven Miculinic}
+\author{Neven Miculini\'{c}}
 
 \maketitle
 \tableofcontents
@@ -42,11 +42,11 @@
 \chapter{Introduction}
 
 Networking is one of the most important topic in everyday computer use. Almost every meaningful action we do in digital forencis, sooner or later involves networkings. Whether it's simply performing backups, viewing facebook messages, sending emails, or accessing databases and utilizing VPN/SSH.
-As in any complex system, one surely describing networking, many things may go wrong and multiple attacks are possible. For the computer forensics purpose, this essay describes bacis linux networking primities, from the time network packet enters the machine, reaches local process, and exits the machine.
+As in any complex system, one surely describing networking, many things may go wrong and multiple attacks are possible. For the computer forensics purpose, this seminar describes bacis linux networking primities, from the time network packet enters the machine, reaches local process, and exits the machine.
 
 It describes two tools consisting used most commonly in Linux networking. First is iptables, part of Netfilter project. Netfilter~\cite{netfilte6:online} is a framework providing various kernel hooks within network stack allowing user to modify and alter network packages. IPtables is their most commonly used utility. It shall be decribed in more detail in following chapters.
 
-Iproute~\cite{shemming47:online} is a collection of userspace utilities for controlling and monitoring various aspects of networking in the Linux kernel, including routing, network interfaces, tunnels, traffic control, and network-related device drivers. In this essay the focus in only on routing, and just a brief introduction and basic/most common commands.
+Iproute~\cite{shemming47:online} is a collection of userspace utilities for controlling and monitoring various aspects of networking in the Linux kernel, including routing, network interfaces, tunnels, traffic control, and network-related device drivers. In this seminar the focus in only on routing, and just a brief introduction and basic/most common commands.
 
 \chapter{iptables}
 This chapter desvribes packet path through various iptables tables and chains. The rest of the chapter is dedicated for explaining basic ip tables concept, with next chapter showing various application.
@@ -134,16 +134,19 @@ iproute2~\ref{shemming47:online} is the moden Linux networking toolkit. It's ins
 First basic comand is \verb|ip route| which display current routes. On my computer the following is the display:
 \begin{verbatim}
 default via 192.168.121.1 dev wlp1s0 proto dhcp metric 600
-172.17.0.0/16 dev docker0 proto kernel scope link src 172.17.0.1
-172.18.0.0/16 dev br-8fd3cee01eeb proto kernel scope link src 172.18.0.1 linkdown
-192.168.121.0/24 dev wlp1s0 proto kernel scope link src 192.168.121.194 metric 600
+172.17.0.0/16 dev docker0 proto kernel scope
+    link src 172.17.0.1
+172.18.0.0/16 dev br-8fd3cee01eeb proto kernel scope
+    link src 172.18.0.1 linkdown
+192.168.121.0/24 dev wlp1s0 proto kernel scope link
+    src 192.168.121.194 metric 600
 \end{verbatim}
 In the first colum are the destination addresses for which this rule matches. For matching the longest matching prefix is used --> that mean if we have two rules:
 \begin{verbatim}
 172.17.0.0/16 dev eth0 ...
 172.17.0.0/24 dev eth1 ...
 \end{verbatim}
-and we're sending the package to 172.17.0.1 it shall be routed via interface eth1 since it's the longest matching prefix.
+and we're sending the package to 172.17.0.1 it shall be routed via interface eth1 since it's the longest matching prefix. For more details on rule selectino algorithm read section~\ref{sec:route-sel}
 
 If no prefix is matches, (e.g. 35.12.23.44) the packed shall be routed via default rule. The first rule:
 
@@ -153,7 +156,40 @@ default via 192.168.121.1 dev wlp1s0 proto dhcp metric 600
 
 Says send package to 192.186.121.1 over device wlp1s0. It shall find how to send to that device (using ARP -- address resolution protocol) and send the package unchanged over layer 2 (from OSI layer model).
 
-dev <X> Says which interface is used to send packet. It's a layer 2 endpoint -- etherner, WLAN, PPP or any other layer 2 protocol (or Link layer in the Internet protocol suite)
+dev <X> says which interface is used to send packet. It's a layer 2 endpoint -- etherner, WLAN, PPP or any other layer 2 protocol (or Link layer in the Internet protocol suite)
+
+src <X> suggest to kernel which is the source IP address if the package is originating within this host. It's used by kernel address selection algorithm.
+
+proto <X> says who/how the route got configured. \verb|proto kernel| means during kernel autoconfiguration, and \verb|proto dhcp| is using DHCP protocol.
+
+metric <X> says about the route metric.
+
+To add new route simply use \verb|ip route add|, example:
+\begin{verbatim}
+ip route add 192.0.2.0/25 dev eth0
+ip route add default dev eth0
+ip route add 0.0.0.0/0 dev eth0
+\end{verbatim}
+
+Last two lines command are equvivalent. To add route via a gateway use \verb|ip route add ${address}/${mask} via ${next hop}|, example
+\verb|ip route add 192.0.2.128/25 via 192.0.2.1|
+
+Similaraly for remove a route:
+\begin{verbatim}
+    ip route delete 10.0.1.0/25 via 10.0.0.1
+    ip route delete default dev ppp0
+\end{verbatim}
+
+\section{Route selection}
+\label{sec:route-sel}
+Route selection is done in the following way. They are matched against this rules until only one possible route remains.
+\begin{itemize}
+    \item longest matching prefix --> Find the route with the most specific prefix. 10.0.0.0/24 is more specific than 10.0.0.0/8, and both are matched for 10.0.0.1
+    \item Lowest administrative distance --> Manually set routes have (\verb|proto static|) have lower administrative distance then automatically set by protocols, e.g. \verb|proto dhcp|
+    \item Lowest metric
+\end{itemize}
+
+
 \chapter{Example usecases}
 
 \section{NAT}
@@ -210,7 +246,7 @@ Yet, hopefully by the time he figures it out, he'll already be a functional adul
 
 \chapter{Conclusion}
 
-Linux networking is immensly broad topic.
+Linux networking is immensly broad topic. As such, this seminar is just a small overview of selected few topics of interest to the authour. This techniques are useful in preliminary network debugging and forensics.
 
 
 \bibliography{refs}
