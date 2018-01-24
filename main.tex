@@ -41,20 +41,20 @@
 
 \chapter{Introduction}
 
-Networking is one of the most important topic in the everyday computer use. Almost every meaningful action we do in digital world, sooner or later involves networkings. Whether it's simply performing backups, viewing facebook messages, sending emails, or accessing databases and utilizing VPN/SSH.
+Networking is one of the most important topics in the everyday computer use. Almost every meaningful action we do in the digital world sooner or later involves networking. Whether it's simply performing backups, viewing facebook messages, sending emails, or accessing databases and utilizing VPN/SSH.
 
-As in any complex system, networking included, many things may go haywire and multiple attacks are possible. China accidently routed 15\% of internet trafic in April 2010~\cite{HowChina98:online}. Viruses are spread through the network. The huge throughput makes it hard and challenging problem to tame, understand and navigate.
+As in any complex system, networking included, many things may go haywire and multiple attacks are possible. China accidentally routed 15\% of internet traffic on April 2010~\cite{HowChina98:online}. Viruses are spread through the network. The huge throughput makes it a hard and challenging problem to tame, understand and navigate.
 
-For the computer forensics purpose, this seminar describes bacis linux networking primities, from the time network packet enters the machine, reaches local process, and exits the machine.
+For the computer forensics purpose, this seminar describes basic Linux networking primitives, from the time network packet enters the machine, reaches local process, and exits the machine.
 
-It describes two tools consisting used most commonly in Linux networking. First is iptables, part of Netfilter project. Netfilter~\cite{netfilte6:online} is a framework providing various kernel hooks within network stack allowing user to modify and alter network packages. IPtables is their most commonly used utility. It shall be decribed in more detail in the chapter~\ref{chp:iptables}.
+It describes two tools consisting used most commonly in Linux networking. First is iptables, part of Netfilter project. Netfilter~\cite{netfilte6:online} is a framework providing various kernel hooks within network stack allowing a user to modify and alter network packages. IPtables is their most commonly used utility. It shall be described in more detail in the chapter~\ref{chp:iptables}.
 
 Iproute2~\cite{shemming47:online} is a collection of userspace utilities for controlling and monitoring various aspects of networking in the Linux kernel, including routing, network interfaces, tunnels, traffic control, and network-related device drivers. In this seminar the focus in only on the routing, and just a brief introduction and basic/most common commands.
 
 \chapter{iptables}
 \label{chp:iptables}
-This chapter describes packet path through various iptables tables and chains. The rest of the chapter is dedicated for explaining basic ip tables concept
-Visual overview can be seen in figure~\ref{fig:iptables_traverse}. This chapter is introducion in the iptables concept. For more information about syntax refer the manual page \verb|man iptables|.
+This chapter describes packet path through various iptables tables and chains. The rest of the chapter is dedicated to explaining basic IP tables concept
+A visual overview can be seen in figure~\ref{fig:iptables_traverse}. This chapter is introduction in the iptables concept. For more information about syntax refer the manual page \verb|man iptables|.
 
 \begin{figure}
     \centering
@@ -64,20 +64,20 @@ Visual overview can be seen in figure~\ref{fig:iptables_traverse}. This chapter 
 \end{figure}
 
 \section{Rule}
-    The most basic construct is an if-then rule. It's if side can be matched on various attributes -- packet's interface, protocol, source and destination IP adress, or even custom BPF~\cite{BPFthefo6:online} can be used. Upon rule matching, their 'then' side is executed, called \emph{target} within this context.
+    The most basic construct is an if-then rule. It's if side can be matched on various attributes -- packet's interface, protocol, source and destination IP address, or even custom BPF~\cite{BPFthefo6:online} can be used. Upon rule matching, their 'then' side is executed, called \emph{target} within this context.
 
-    The most common rule targets are ACCEPT, DROP, REJECT ones which perform packet filtering. In NAT table, common ones are DNAT, SNAT and MASQUERADE which perform IP:port NATing. NAT related targets are explained in section~\ref{sec:NAT}. Other common rule targets are LOG and jump to another chain. Chain jumping is further explaing in section~\ref{sec:chain}.
+    The most common rule targets are ACCEPT, DROP, REJECT ones which perform packet filtering. In NAT table, common ones are DNAT, SNAT, and MASQUERADE which perform IP:port NATing. NAT related targets are explained in section~\ref{sec:NAT}. Other common rule targets are LOG and jump to another chain. Chain jumping is further explained in section~\ref{sec:chain}.
 
 \section{Chain}
 \label{sec:chain}
-    Chain is a list of rules which are matched in order. Rule can be terminal (most of them) or nonterminal (e.g. LOG,  ULOG). Upon reaching the terminal rule (e.g. DROP) chain has reached its end. Chain can have it's default policy (e.g. DROP for table filter in INPUT chain).
-    There are two types of chains -- system (PREROURING, INPUT, FORWARD, OUTPUT, POSTROUTING) and user defined chains.
-    User defined chains target jump within the same table (e.g. jump to user defined chain).
+    A chain is a list of rules which are matched in order. A rule can be terminal (most of them) or nonterminal (e.g. LOG,  ULOG). Upon reaching the terminal rule (e.g. DROP) chain has reached its end. The chain can have its default policy (e.g. DROP for table filter in INPUT chain).
+    There are two types of chains -- system (PREROUTING, INPUT, FORWARD, OUTPUT, POSTROUTING) and user-defined chains.
+    User-defined chains target jump within the same table (e.g. jump to user-defined chain).
     They are created with \verb|iptables -N <chain_name> -t <table name [filter default]>|.
     Chain traversal is depicted in figure~\ref{fig:iptables_subtraverse}. System chains are:
 
     \begin{itemize}
-        \item PREROURING -- Packet arriving in the kernel before any routing
+        \item PREROUTING -- Packet arriving in the kernel before any routing
         \item INPUT -- Packet is destined for the local process
         \item FORWARD -- Packet isn't destined for the local process
         \item OUTPUT -- Packet originated from local process
@@ -92,12 +92,12 @@ Visual overview can be seen in figure~\ref{fig:iptables_traverse}. This chapter 
         \label{fig:iptables_subtraverse}
     \end{figure}
 \section{Tables}
-    Tables are bread and butter of this package. Each table defines specific hooks in the kernel for various system chains. Each table is composed of multipe chains, what system defined ones, what user defined chains.
+    Tables are bread and butter of this package. Each table defines specific hooks in the kernel for various system chains. Each table is composed of multiple chains, what system defined ones, what user-defined chains.
     There are 5 tables:
     \begin{itemize}
-        \item raw -- applied before any connection tracking takes place. Used mostly to disable connection tracking since it's moderatly expensive. More information about connection tracking in subsection~\ref{subsec:conn-track}
+        \item raw -- applied before any connection tracking takes place. Used mostly to disable connection tracking since it's moderately expensive. More information about connection tracking in subsection~\ref{subsec:conn-track}
         \item mangle -- Mostly used for quality-of-service (QoS) header bit setting.
-        \item filter -- packet filtering (DROP, ACCEPT and REJECT tagets)
+        \item filter -- packet filtering (DROP, ACCEPT and REJECT targets)
         \item nat -- NATing packages (DNAT, SNAT, MASQUERADE)
         \item security -- packet marking (SECMARK, CONNSECMARK) for SELinux. They are out of scope for this seminar.
     \end{itemize}
@@ -113,7 +113,7 @@ Visual overview can be seen in figure~\ref{fig:iptables_traverse}. This chapter 
     \begin{itemize}
         \item NEW -- first packet of the connection
         \item ESTABLISHED -- both server and client have sent a package
-        \item RELATED -- related connection to an enstablished one. Protocol specific (e.g. there's FTP, IRC, etc. support in the kernel for RELATED connection tracking)
+        \item RELATED -- related connection to an established one. Protocol specific (e.g. there's FTP, IRC, etc. support in the kernel for RELATED connection tracking)
         \item INVALID -- connection state cannot be determined
     \end{itemize}
 
@@ -124,7 +124,7 @@ Visual overview can be seen in figure~\ref{fig:iptables_traverse}. This chapter 
 
 For NAT there are three specific targets related to NATing:
 \begin{itemize}
-    \item SNAT -- Source Network Address Translation. Exit packets source IP and port are rewriten to supplied source IP address. It is only valid in nat table within POSTROUTING chain. Downside is our source IP address must be known and static (or static range). Examples:
+    \item SNAT -- Source Network Address Translation. Exit packets source IP and port are rewritten to supplied source IP address. It is only valid in nat table within POSTROUTING chain. The downside is our source IP address must be known and static (or static range). Examples:
     \begin{minted}{bash}
 # Change source addresses to 1.2.3.4.
 iptables -t nat -A POSTROUTING -o eth0 -j SNAT --to 1.2.3.4
@@ -137,7 +137,7 @@ iptables -t nat -A POSTROUTING -o eth0 -j SNAT \
 iptables -t nat -A POSTROUTING -p tcp -o eth0 -j SNAT \
     --to 1.2.3.4:1-1023
     \end{minted}
-    \item DNAT -- Destination Network Address Translation. It changes the package reciepeing, useful for servers behind firewall. It is only valid within nat table and PREROURING and OUTPUT chain. Examples:
+    \item DNAT -- Destination Network Address Translation. It changes the package recipient, useful for servers behind firewall. It is only valid within nat table and PREROUTING and OUTPUT chain. Examples:
     \begin{minted}{bash}
 iptables -t nat -A PREROUTING -p tcp -d 15.45.23.67 --dport 80 \
     -j DNAT --to-destination 192.168.1.1-192.168.1.10
@@ -147,18 +147,18 @@ iptables -t nat -A PREROUTING -p tcp -d 15.45.23.67 --dport 80 \
 iptables -t nat -A PREROURING -p tcp -o eth0 -j REDIRECT \
     --to-ports 1234
     \end{minted}
-    \item MASQUERADE -- it's similar to SNAT, but it doesn't require source IP address. It automatically grabs IP address information from sending interface. This is used in dymanically assigned IP connections. Example:
+    \item MASQUERADE -- it's similar to SNAT, but it doesn't require source IP address. It automatically grabs IP address information from sending interface. This is used in dynamically assigned IP connections. Example:
     \begin{minted}{bash}
 iptables -t nat -A POSTROUTING -p TCP -j MASQUERADE
     \end{minted}
-    I've used in real life while configuring OpenVPN server on google cloud, since google cloud instances only allow outgoing trafic with the source IP equals intance IP.
+    I've used in real life while configuring OpenVPN server on google cloud, since google cloud instances only allow outgoing traffic with the source IP equals instance IP.
 \end{itemize}
 
 \section{Disabling internet access for specific device at specific time}
 
-For example you might have a really smart teen adicted to the internet.
-And you'd like disabling his internet access at the router level at certain times, while keeping rest functioning.
-It can be simly done with one iptables command and few extra modules
+For example, you might have a really smart teen addicted to the internet.
+And you'd like disabling his internet access at the router level at certain times while keeping rest functioning.
+It can be simply done with one iptables command and few extra modules
 
 \begin{minted}{bash}
 iptables -A PREROURING -m mac --mac-source 00:0F:EA:91:04:08 \
@@ -168,12 +168,12 @@ iptables -A PREROURING -m mac --mac-source 00:0F:EA:91:04:08 \
 \end{minted}
 
 This is more efficient than IP filtering since you're probably running DHCP on your network dynamically assigning IP addresses.
-Nevertheless, it's easy for attacker (your teen) to figure out his MAC address is filterer, and to spoof it.
-Yet, hopefully by the time he figures it out, he'll already be a functional adult.
+Nevertheless, it's easy for attacker (your teen) to figure out his MAC address is filtered, and to spoof it.
+Yet, hopefully, by the time he figures it out, he'll already be a functional adult.
 
 
 \chapter{Routing tables}
-iproute2~\ref{shemming47:online} is the moden Linux networking toolkit. It's installed by default on almost all Linux distributions, or available from package manager. This explains only the basic routing primitives and usages. For more details refer to the man page, or this cheetcheet~\cite{iproute285:online}. All IP subnet examples shall use CIDR~\cite{Classles63:online} notation. Also a brief remined about two network stack models. OSI:
+iproute2~\ref{shemming47:online} is the modern Linux networking toolkit. It's installed by default on almost all Linux distributions, or available from package manager. This explains only the basic routing primitives and usages. For more details refer to the man page, or this cheetcheet~\cite{iproute285:online}. All IP subnet examples shall use CIDR~\cite{Classles63:online} notation. Also a brief reminded about two network stack models. OSI:
     \begin{itemize}
         \item layer 7 -- application layer
         \item layer 6 -- presentation layer
@@ -191,7 +191,7 @@ iproute2~\ref{shemming47:online} is the moden Linux networking toolkit. It's ins
         \item Link layer (e.g. PPP, IEEE 802.11)
     \end{itemize}
 
-First basic comand is \verb|ip route| which display current routes. On my computer the following is the display:
+First basic command is \verb|ip route| which displays current routes. On my computer, the following is the display:
 \begin{verbatim}
 default via 192.168.121.1 dev wlp1s0 proto dhcp metric 600
 172.17.0.0/16 dev docker0 proto kernel scope
@@ -201,14 +201,14 @@ default via 192.168.121.1 dev wlp1s0 proto dhcp metric 600
 192.168.121.0/24 dev wlp1s0 proto kernel scope link
     src 192.168.121.194 metric 600
 \end{verbatim}
-In the first colum are the destination addresses for which this rule matches. For matching the longest matching prefix is used --> that mean if we have two rules:
+In the first column are the destination addresses for which this rule matches. For matching the longest matching prefix is used --> that means if we have two rules:
 \begin{verbatim}
 172.17.0.0/16 dev eth0 ...
 172.17.0.0/24 dev eth1 ...
 \end{verbatim}
-and we're sending the package to 172.17.0.1 it shall be routed via interface eth1 since it's the longest matching prefix. For more details on rule selectino algorithm read section~\ref{sec:route-sel}
+and we're sending the package to 172.17.0.1 it shall be routed via interface eth1 since it's the longest matching prefix. For more details on rule selection algorithm read section~\ref{sec:route-sel}
 
-If no prefix is matches, (e.g. 35.12.23.44) the packed shall be routed via default rule. The first rule:
+If no prefix matches, (e.g. 35.12.23.44) the packed shall be routed via default rule. The first rule:
 
 \begin{verbatim}
 default via 192.168.121.1 dev wlp1s0 proto dhcp metric 600
@@ -216,7 +216,7 @@ default via 192.168.121.1 dev wlp1s0 proto dhcp metric 600
 
 Says send package to 192.186.121.1 over device wlp1s0. It shall find how to send to that device (using ARP -- address resolution protocol) and send the package unchanged over layer 2 (from OSI layer model).
 
-dev <X> says which interface is used to send packet. It's a layer 2 endpoint -- etherner, WLAN, PPP or any other layer 2 protocol (or Link layer in the Internet protocol suite)
+dev <X> says which interface is used to send packet. It's a layer 2 endpoint -- ethernet, WLAN, PPP or any other layer 2 protocol (or Link layer in the Internet protocol suite)
 
 src <X> suggest to kernel which is the source IP address if the package is originating within this host. It's used by kernel address selection algorithm.
 
@@ -234,7 +234,7 @@ ip route add 0.0.0.0/0 dev eth0
 Last two lines command are equvivalent. To add route via a gateway use \verb|ip route add ${address}/${mask} via ${next hop}|, example
 \verb|ip route add 192.0.2.128/25 via 192.0.2.1|
 
-Similaraly for remove a route:
+Similarly to remove a route:
 \begin{verbatim}
     ip route delete 10.0.1.0/25 via 10.0.0.1
     ip route delete default dev ppp0
@@ -251,7 +251,7 @@ Route selection is done in the following way. They are matched against this rule
 
 \chapter{Conclusion}
 
-Linux networking is immensly broad topic. As such, this seminar is just a small overview of selected few topics of interest to the authour. This techniques are useful in preliminary network debugging and forensics. The basic iptables configuration and routing has been covered. For further improvement in this topic reading manual pages is encouraged.
+Linux networking is immensely broad topic. As such, this seminar is just a small overview of selected few topics of interest to the author. These techniques are useful in preliminary network debugging and forensics. The basic iptables configuration and routing have been covered. For further improvement in this topic reading manual pages is encouraged.
 
 \bibliography{refs}
 \bibliographystyle{fer}
