@@ -41,15 +41,19 @@
 
 \chapter{Introduction}
 
-Networking is one of the most important topic in everyday computer use. Almost every meaningful action we do in digital forencis, sooner or later involves networkings. Whether it's simply performing backups, viewing facebook messages, sending emails, or accessing databases and utilizing VPN/SSH.
-As in any complex system, one surely describing networking, many things may go wrong and multiple attacks are possible. For the computer forensics purpose, this seminar describes bacis linux networking primities, from the time network packet enters the machine, reaches local process, and exits the machine.
+Networking is one of the most important topic in the everyday computer use. Almost every meaningful action we do in digital world, sooner or later involves networkings. Whether it's simply performing backups, viewing facebook messages, sending emails, or accessing databases and utilizing VPN/SSH.
 
-It describes two tools consisting used most commonly in Linux networking. First is iptables, part of Netfilter project. Netfilter~\cite{netfilte6:online} is a framework providing various kernel hooks within network stack allowing user to modify and alter network packages. IPtables is their most commonly used utility. It shall be decribed in more detail in following chapters.
+As in any complex system, networking included, many things may go haywire and multiple attacks are possible. China accidently routed 15\% of internet trafic in April 2010~\cite{HowChina98:online}. Viruses are spread through the network. The huge throughput makes it hard and challenging problem to tame, understand and navigate.
 
-Iproute~\cite{shemming47:online} is a collection of userspace utilities for controlling and monitoring various aspects of networking in the Linux kernel, including routing, network interfaces, tunnels, traffic control, and network-related device drivers. In this seminar the focus in only on routing, and just a brief introduction and basic/most common commands.
+For the computer forensics purpose, this seminar describes bacis linux networking primities, from the time network packet enters the machine, reaches local process, and exits the machine.
+
+It describes two tools consisting used most commonly in Linux networking. First is iptables, part of Netfilter project. Netfilter~\cite{netfilte6:online} is a framework providing various kernel hooks within network stack allowing user to modify and alter network packages. IPtables is their most commonly used utility. It shall be decribed in more detail in the chapter~\ref{chp:iptables}.
+
+Iproute2~\cite{shemming47:online} is a collection of userspace utilities for controlling and monitoring various aspects of networking in the Linux kernel, including routing, network interfaces, tunnels, traffic control, and network-related device drivers. In this seminar the focus in only on the routing, and just a brief introduction and basic/most common commands.
 
 \chapter{iptables}
-This chapter desvribes packet path through various iptables tables and chains. The rest of the chapter is dedicated for explaining basic ip tables concept, with next chapter showing various application.
+\label{chp:iptables}
+This chapter describes packet path through various iptables tables and chains. The rest of the chapter is dedicated for explaining basic ip tables concept
 Visual overview can be seen in figure~\ref{fig:iptables_traverse}. This chapter is introducion in the iptables concept. For more information about syntax refer the manual page \verb|man iptables|.
 
 \begin{figure}
@@ -60,11 +64,12 @@ Visual overview can be seen in figure~\ref{fig:iptables_traverse}. This chapter 
 \end{figure}
 
 \section{Rule}
-    Iptables have various rule, when matches their target is executed. They function as if-then construct. The most common rule 'ifs' are source/destination address, protocol and/or interface. They can be combined with and/or clauses. Furthermore any valid BPF~\cite{BPFthefo6:online} bytecode can be rule 'if'
+    The most basic construct is an if-then rule. It's if side can be matched on various attributes -- packet's interface, protocol, source and destination IP adress, or even custom BPF~\cite{BPFthefo6:online} can be used. Upon rule matching, their 'then' side is executed, called \emph{target} within this context.
 
-    The most common rule targets are ACCEPT, DROP, REJECT ones which perform packet filtering. In NAT table, common ones are DNAT, SNAT and MASQUERADE which perform IP:port NATing. NAT related targets are explained in section~\ref{sec:NAT}. Other common rule targets are LOG and jump to another chain. It will be explain in more detail in later chapters.
+    The most common rule targets are ACCEPT, DROP, REJECT ones which perform packet filtering. In NAT table, common ones are DNAT, SNAT and MASQUERADE which perform IP:port NATing. NAT related targets are explained in section~\ref{sec:NAT}. Other common rule targets are LOG and jump to another chain. Chain jumping is further explaing in section~\ref{sec:chain}.
 
 \section{Chain}
+\label{sec:chain}
     Chain is a list of rules which are matched in order. Rule can be terminal (most of them) or nonterminal (e.g. LOG,  ULOG). Upon reaching the terminal rule (e.g. DROP) chain has reached its end. Chain can have it's default policy (e.g. DROP for table filter in INPUT chain).
     There are two types of chains -- system (PREROURING, INPUT, FORWARD, OUTPUT, POSTROUTING) and user defined chains.
     User defined chains target jump within the same table (e.g. jump to user defined chain).
@@ -91,16 +96,16 @@ Visual overview can be seen in figure~\ref{fig:iptables_traverse}. This chapter 
     There are 5 tables:
     \begin{itemize}
         \item raw -- applied before any connection tracking takes place. Used mostly to disable connection tracking since it's moderatly expensive. More information about connection tracking in subsection~\ref{subsec:conn-track}
-        \item mangle -- Mostly used for quality-of-service (QoS) header bit setting
+        \item mangle -- Mostly used for quality-of-service (QoS) header bit setting.
         \item filter -- packet filtering (DROP, ACCEPT and REJECT tagets)
         \item nat -- NATing packages (DNAT, SNAT, MASQUERADE)
-        \item security -- packet marking (SECMARK, CONNSECMARK) for SELinux.
+        \item security -- packet marking (SECMARK, CONNSECMARK) for SELinux. They are out of scope for this seminar.
     \end{itemize}
     Refer to link~\cite{Iptables27:online} for more detail. To view all chains and rule in particular table use \verb|iptables -vnL -t <table_name>|.
 
 \section{Extensions}
-    Iptables offers multiple modules you can use.
-    You can view all installed modules by \texttt{ls -l /lib/iptables} and iptables will load all required modules dynamically. One of the most common ones is connection tracking.
+    Iptables offers multiple modules you can use. They extend the basic functionality.
+    You can view all installed modules by \texttt{ls -l /lib/iptables} and iptables will load all required modules dynamically. One of the most common ones is connection tracking. For other refer to their manual pages and documentation.
 
     \subsection{Conection tracking}
     \label{subsec:conn-track}
@@ -111,6 +116,61 @@ Visual overview can be seen in figure~\ref{fig:iptables_traverse}. This chapter 
         \item RELATED -- related connection to an enstablished one. Protocol specific (e.g. there's FTP, IRC, etc. support in the kernel for RELATED connection tracking)
         \item INVALID -- connection state cannot be determined
     \end{itemize}
+
+\chapter{IPtable examples}
+
+\section{NAT}
+\label{sec:NAT}
+
+For NAT there are three specific targets related to NATing:
+\begin{itemize}
+    \item SNAT -- Source Network Address Translation. Exit packets source IP and port are rewriten to supplied source IP address. It is only valid in nat table within POSTROUTING chain. Downside is our source IP address must be known and static (or static range). Examples:
+    \begin{minted}{bash}
+# Change source addresses to 1.2.3.4.
+iptables -t nat -A POSTROUTING -o eth0 -j SNAT --to 1.2.3.4
+
+# Change source addresses to 1.2.3.4, 1.2.3.5 or 1.2.3.6
+iptables -t nat -A POSTROUTING -o eth0 -j SNAT \
+    --to 1.2.3.4-1.2.3.6
+
+# Change source addresses to 1.2.3.4, ports 1-1023
+iptables -t nat -A POSTROUTING -p tcp -o eth0 -j SNAT \
+    --to 1.2.3.4:1-1023
+    \end{minted}
+    \item DNAT -- Destination Network Address Translation. It changes the package reciepeing, useful for servers behind firewall. It is only valid within nat table and PREROURING and OUTPUT chain. Examples:
+    \begin{minted}{bash}
+iptables -t nat -A PREROUTING -p tcp -d 15.45.23.67 --dport 80 \
+    -j DNAT --to-destination 192.168.1.1-192.168.1.10
+    \end{minted}
+    \item REDIRECT -- DNAT but make destination local host. Only the port is changed.
+    \begin{minted}{bash}
+iptables -t nat -A PREROURING -p tcp -o eth0 -j REDIRECT \
+    --to-ports 1234
+    \end{minted}
+    \item MASQUERADE -- it's similar to SNAT, but it doesn't require source IP address. It automatically grabs IP address information from sending interface. This is used in dymanically assigned IP connections. Example:
+    \begin{minted}{bash}
+iptables -t nat -A POSTROUTING -p TCP -j MASQUERADE
+    \end{minted}
+    I've used in real life while configuring OpenVPN server on google cloud, since google cloud instances only allow outgoing trafic with the source IP equals intance IP.
+\end{itemize}
+
+\section{Disabling internet access for specific device at specific time}
+
+For example you might have a really smart teen adicted to the internet.
+And you'd like disabling his internet access at the router level at certain times, while keeping rest functioning.
+It can be simly done with one iptables command and few extra modules
+
+\begin{minted}{bash}
+iptables -A PREROURING -m mac --mac-source 00:0F:EA:91:04:08 \
+    -m time --timestart 9:00 --timestop 18:00 -j ACCEPT
+iptables -A PREROURING -m mac --mac-source 00:0F:EA:91:04:08 \
+    -j DROP
+\end{minted}
+
+This is more efficient than IP filtering since you're probably running DHCP on your network dynamically assigning IP addresses.
+Nevertheless, it's easy for attacker (your teen) to figure out his MAC address is filterer, and to spoof it.
+Yet, hopefully by the time he figures it out, he'll already be a functional adult.
+
 
 \chapter{Routing tables}
 iproute2~\ref{shemming47:online} is the moden Linux networking toolkit. It's installed by default on almost all Linux distributions, or available from package manager. This explains only the basic routing primitives and usages. For more details refer to the man page, or this cheetcheet~\cite{iproute285:online}. All IP subnet examples shall use CIDR~\cite{Classles63:online} notation. Also a brief remined about two network stack models. OSI:
@@ -189,65 +249,9 @@ Route selection is done in the following way. They are matched against this rule
     \item Lowest metric
 \end{itemize}
 
-
-\chapter{Example usecases}
-
-\section{NAT}
-\label{sec:NAT}
-
-For NAT there are three specific targets related to NATing:
-\begin{itemize}
-    \item SNAT -- Source Network Address Translation. Exit packets source IP and port are rewriten to supplied source IP address. It is only valid in nat table within POSTROUTING chain. Downside is our source IP address must be known and static (or static range). Examples:
-    \begin{minted}{bash}
-# Change source addresses to 1.2.3.4.
-iptables -t nat -A POSTROUTING -o eth0 -j SNAT --to 1.2.3.4
-
-# Change source addresses to 1.2.3.4, 1.2.3.5 or 1.2.3.6
-iptables -t nat -A POSTROUTING -o eth0 -j SNAT \
-    --to 1.2.3.4-1.2.3.6
-
-# Change source addresses to 1.2.3.4, ports 1-1023
-iptables -t nat -A POSTROUTING -p tcp -o eth0 -j SNAT \
-    --to 1.2.3.4:1-1023
-    \end{minted}
-    \item DNAT -- Destination Network Address Translation. It changes the package reciepeing, useful for servers behind firewall. It is only valid within nat table and PREROURING and OUTPUT chain. Examples:
-    \begin{minted}{bash}
-iptables -t nat -A PREROUTING -p tcp -d 15.45.23.67 --dport 80 \
-    -j DNAT --to-destination 192.168.1.1-192.168.1.10
-    \end{minted}
-    \item REDIRECT -- DNAT but make destination local host. Only the port is changed.
-    \begin{minted}{bash}
-iptables -t nat -A PREROURING -p tcp -o eth0 -j REDIRECT \
-    --to-ports 1234
-    \end{minted}
-    \item MASQUERADE -- it's similar to SNAT, but it doesn't require source IP address. It automatically grabs IP address information from sending interface. This is used in dymanically assigned IP connections. Example:
-    \begin{minted}{bash}
-iptables -t nat -A POSTROUTING -p TCP -j MASQUERADE
-    \end{minted}
-    I've used in real life while configuring OpenVPN server on google cloud, since google cloud instances only allow outgoing trafic with the source IP equals intance IP.
-\end{itemize}
-
-\section{Disabling internet access for specific device at specific time}
-
-For example you might have a really smart teen adicted to the internet.
-And you'd like disabling his internet access at the router level at certain times, while keeping rest functioning.
-It can be simly done with one iptables command and few extra modules
-
-\begin{minted}{bash}
-iptables -A PREROURING -m mac --mac-source 00:0F:EA:91:04:08 \
-    -m time --timestart 9:00 --timestop 18:00 -j ACCEPT
-iptables -A PREROURING -m mac --mac-source 00:0F:EA:91:04:08 \
-    -j DROP
-\end{minted}
-
-This is more efficient than IP filtering since you're probably running DHCP on your network dynamically assigning IP addresses.
-Nevertheless, it's easy for attacker (your teen) to figure out his MAC address is filterer, and to spoof it.
-Yet, hopefully by the time he figures it out, he'll already be a functional adult.
-
 \chapter{Conclusion}
 
-Linux networking is immensly broad topic. As such, this seminar is just a small overview of selected few topics of interest to the authour. This techniques are useful in preliminary network debugging and forensics.
-
+Linux networking is immensly broad topic. As such, this seminar is just a small overview of selected few topics of interest to the authour. This techniques are useful in preliminary network debugging and forensics. The basic iptables configuration and routing has been covered. For further improvement in this topic reading manual pages is encouraged.
 
 \bibliography{refs}
 \bibliographystyle{fer}
