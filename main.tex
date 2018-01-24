@@ -21,6 +21,24 @@
 \maketitle
 \tableofcontents
 
+% Sadrži li seminar sve od navedenog: uvod, sadržaj, zaključak, popis literature? [yes]
+% Sadrži li tekst seminara pravopisne pogreške? [TODO]
+% Je li tekst seminara jasan i koherentan odnosno sadrži li sve potrebne informacije za razumijevanje? [TODO]
+% Jesu li margine teksta u seminaru poravnate (justified)? [yes]
+% Jesu li tvrdnje u tekstu seminara jasne i argumentirane? [yes, TODO]
+% Jesu li sve slike i tablice referencirane (navedene) u tekstu seminara prije nego što se pojavljuju?
+% Jesu li sve slike u seminaru čiste i bez pikselizacije ili razmazivanja? [yes]
+% Postoje li tablice u seminaru pohranjene kao slike? (Ako su pohranjene kao slike, tada u pdf dokumentu sa seminarom ne možete mišem označiti odgovarajući tekst). [no]
+% Sadrži li tekst seminara neki od neprimjerenih ili nepreciznih izraza uključujući: napretkom čovječanstva, znate ono kad, recimo da, konekcija, mejl, vrti se ili izravno obraćanje čitatelju (vi ste vjerojatno mislili), izražavanje u prvom licu jednine (sada ću objasniti) ili množine (problem koji često imamo)? [no, TODO]
+% Koliko vam se čini da je bilo složeno pronaći istinite informacije, obraditi temu te ju prikazati? [medium hard]
+% Ukupna ocjena za oblikovanje tekstualnog dijela seminara?
+% Kakav opći dojam na vas ostavlja seminar (pdf dokument)? Biste li ga rado opet čitali. Biste li ga s ponosom pokazivali drugima? Biste li ga koristili u neki svojim drugim predavanjima ako je prikladan?
+% Ima li video seminara uvod/uvodnu špicu pripremljenom u skladu s uputama?
+% Je li siljed izlaganja u videu seminara smislen i razumljiv?
+% Ocijenite kvalitetu slike videa.
+% Ocijenite kvalitetu zvuka (naracije) videa.
+% Kakav opći dojam na vas ostavlja video materijal? Biste li ga rado opet gledali. Biste li ga s ponosom pokazivali drugima? Biste li ga koristili u neki svojim drugim predavanjima ako je prikladan?
+
 \chapter{Introduction}
 
 Networking is one of the most important topic in everyday computer use. Almost every meaningful action we do in digital forencis, sooner or later involves networkings. Whether it's simply performing backups, viewing facebook messages, sending emails, or accessing databases and utilizing VPN/SSH.
@@ -32,7 +50,7 @@ Iproute~\cite{shemming47:online} is a collection of userspace utilities for cont
 
 \chapter{iptables}
 This chapter desvribes packet path through various iptables tables and chains. The rest of the chapter is dedicated for explaining basic ip tables concept, with next chapter showing various application.
-Visual overview can be seen in figure~\ref{fig:iptables_traverse}.
+Visual overview can be seen in figure~\ref{fig:iptables_traverse}. This chapter is introducion in the iptables concept. For more information about syntax refer the manual page \verb|man iptables|.
 
 \begin{figure}
     \centering
@@ -44,12 +62,12 @@ Visual overview can be seen in figure~\ref{fig:iptables_traverse}.
 \section{Rule}
     Iptables have various rule, when matches their target is executed. They function as if-then construct. The most common rule 'ifs' are source/destination address, protocol and/or interface. They can be combined with and/or clauses. Furthermore any valid BPF~\cite{BPFthefo6:online} bytecode can be rule 'if'
 
-    The most common rule targets are ACCEPT, DROP, REJECT ones which perform packet filtering. In NAT table, common ones are DNAT, SNAT and MASQUERADE which perform IP:port NATing. NAT related targets are explained in section~\ref{sec:NAT}. Other common rule targets are LOG and jump to another chain.
+    The most common rule targets are ACCEPT, DROP, REJECT ones which perform packet filtering. In NAT table, common ones are DNAT, SNAT and MASQUERADE which perform IP:port NATing. NAT related targets are explained in section~\ref{sec:NAT}. Other common rule targets are LOG and jump to another chain. It will be explain in more detail in later chapters.
 
 \section{Chain}
     Chain is a list of rules which are matched in order. Rule can be terminal (most of them) or nonterminal (e.g. LOG,  ULOG). Upon reaching the terminal rule (e.g. DROP) chain has reached its end. Chain can have it's default policy (e.g. DROP for table filter in INPUT chain).
     There are two types of chains -- system (PREROURING, INPUT, FORWARD, OUTPUT, POSTROUTING) and user defined chains.
-    User defined chains server se target jump within the same table (e.g. jump to user defined chain).
+    User defined chains target jump within the same table (e.g. jump to user defined chain).
     They are created with \verb|iptables -N <chain_name> -t <table name [filter default]>|.
     Chain traversal is depicted in figure~\ref{fig:iptables_subtraverse}. System chains are:
 
@@ -69,22 +87,23 @@ Visual overview can be seen in figure~\ref{fig:iptables_traverse}.
         \label{fig:iptables_subtraverse}
     \end{figure}
 \section{Tables}
-    Tables are bread and butter of this package. Each table defines specific hooks in the kernel for various system chains. They are associated with specific chain (that is NAT table in PREROURING and POSTROUTING are different). Each table is composed of multipe chains, what system defined ones, what user defined chains.
+    Tables are bread and butter of this package. Each table defines specific hooks in the kernel for various system chains. Each table is composed of multipe chains, what system defined ones, what user defined chains.
     There are 5 tables:
     \begin{itemize}
-        \item raw -- applied before any connection tracking takes place
+        \item raw -- applied before any connection tracking takes place. Used mostly to disable connection tracking since it's moderatly expensive. More information about connection tracking in subsection~\ref{subsec:conn-track}
         \item mangle -- Mostly used for quality-of-service (QoS) header bit setting
         \item filter -- packet filtering (DROP, ACCEPT and REJECT tagets)
         \item nat -- NATing packages (DNAT, SNAT, MASQUERADE)
         \item security -- packet marking (SECMARK, CONNSECMARK) for SELinux.
     \end{itemize}
-    Refer to link~\cite{Iptables27:online} for more detail. In the following few subsections
+    Refer to link~\cite{Iptables27:online} for more detail. To view all chains and rule in particular table use \verb|iptables -vnL -t <table_name>|.
 
 \section{Extensions}
     Iptables offers multiple modules you can use.
     You can view all installed modules by \texttt{ls -l /lib/iptables} and iptables will load all required modules dynamically. One of the most common ones is connection tracking.
 
     \subsection{Conection tracking}
+    \label{subsec:conn-track}
     If connection tracking is enabled (and can be disabled in raw TABLE with \texttt{-j NOTRACK} for rule match) each packet can be in following states:
     \begin{itemize}
         \item NEW -- first packet of the connection
@@ -93,9 +112,48 @@ Visual overview can be seen in figure~\ref{fig:iptables_traverse}.
         \item INVALID -- connection state cannot be determined
     \end{itemize}
 
+\chapter{Routing tables}
+iproute2~\ref{shemming47:online} is the moden Linux networking toolkit. It's installed by default on almost all Linux distributions, or available from package manager. This explains only the basic routing primitives and usages. For more details refer to the man page, or this cheetcheet~\cite{iproute285:online}. All IP subnet examples shall use CIDR~\cite{Classles63:online} notation. Also a brief remined about two network stack models. OSI:
+    \begin{itemize}
+        \item layer 7 -- application layer
+        \item layer 6 -- presentation layer
+        \item layer 5 -- session layer
+        \item layer 4 -- transport layer (e.g. UDP, TCP)
+        \item layer 3 -- network layer (e.g. IP, ICMP, IPSec)
+        \item layer 2 -- data link layer (e.g. ARP, IEEE 802.3)
+        \item layer 1 -- physical layer (e.g. Bluetooth, IEEE 802.3, IEEE 802.11)
+    \end{itemize}
+    and internet protocol suite:
+    \begin{itemize}
+        \item Application layer (e.g. HTTP, DNS, IMAP)
+        \item Transport layer (e.g. TCP, UDP)
+        \item Internet layer (e.g. IP)
+        \item Link layer (e.g. PPP, IEEE 802.11)
+    \end{itemize}
 
-\section{Routing tables}
+First basic comand is \verb|ip route| which display current routes. On my computer the following is the display:
+\begin{verbatim}
+default via 192.168.121.1 dev wlp1s0 proto dhcp metric 600
+172.17.0.0/16 dev docker0 proto kernel scope link src 172.17.0.1
+172.18.0.0/16 dev br-8fd3cee01eeb proto kernel scope link src 172.18.0.1 linkdown
+192.168.121.0/24 dev wlp1s0 proto kernel scope link src 192.168.121.194 metric 600
+\end{verbatim}
+In the first colum are the destination addresses for which this rule matches. For matching the longest matching prefix is used --> that mean if we have two rules:
+\begin{verbatim}
+172.17.0.0/16 dev eth0 ...
+172.17.0.0/24 dev eth1 ...
+\end{verbatim}
+and we're sending the package to 172.17.0.1 it shall be routed via interface eth1 since it's the longest matching prefix.
 
+If no prefix is matches, (e.g. 35.12.23.44) the packed shall be routed via default rule. The first rule:
+
+\begin{verbatim}
+default via 192.168.121.1 dev wlp1s0 proto dhcp metric 600
+\end{verbatim}
+
+Says send package to 192.186.121.1 over device wlp1s0. It shall find how to send to that device (using ARP -- address resolution protocol) and send the package unchanged over layer 2 (from OSI layer model).
+
+dev <X> Says which interface is used to send packet. It's a layer 2 endpoint -- etherner, WLAN, PPP or any other layer 2 protocol (or Link layer in the Internet protocol suite)
 \chapter{Example usecases}
 
 \section{NAT}
@@ -130,6 +188,7 @@ iptables -t nat -A PREROURING -p tcp -o eth0 -j REDIRECT \
     \begin{minted}{bash}
 iptables -t nat -A POSTROUTING -p TCP -j MASQUERADE
     \end{minted}
+    I've used in real life while configuring OpenVPN server on google cloud, since google cloud instances only allow outgoing trafic with the source IP equals intance IP.
 \end{itemize}
 
 \section{Disabling internet access for specific device at specific time}
@@ -148,6 +207,11 @@ iptables -A PREROURING -m mac --mac-source 00:0F:EA:91:04:08 \
 This is more efficient than IP filtering since you're probably running DHCP on your network dynamically assigning IP addresses.
 Nevertheless, it's easy for attacker (your teen) to figure out his MAC address is filterer, and to spoof it.
 Yet, hopefully by the time he figures it out, he'll already be a functional adult.
+
+\chapter{Conclusion}
+
+Linux networking is immensly broad topic.
+
 
 \bibliography{refs}
 \bibliographystyle{fer}
